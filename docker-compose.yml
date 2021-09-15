@@ -25,6 +25,7 @@ services:
     volumes:
       - ./conf/master:/conf
       - ./data:/tmp/data
+      - ./src:/usr/src
 
   worker1:
     image: gettyimages/spark
