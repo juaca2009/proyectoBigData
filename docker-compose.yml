@@ -1,7 +1,7 @@
 version: "2.2"
 services:
   master:
-    image: sparknumpy
+    image: spark
     command: bin/spark-class org.apache.spark.deploy.master.Master -h master
     hostname: master
     environment:
@@ -28,7 +28,7 @@ services:
       - ./src:/usr/src
 
   worker1:
-    image: sparknumpy
+    image: spark
     command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://master:7077
     hostname: worker1
     environment:
@@ -54,7 +54,7 @@ services:
       - ./data:/tmp/data
 
   worker2:
-    image: sparknumpy
+    image: spark
     command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://master:7077
     hostname: worker2
     environment:
