@@ -32,8 +32,11 @@ if __name__ == "__main__":
     lrModel = lr.fit(train)
     predictions = lrModel.transform(test)
     accuracy = predictions.filter(predictions.label == predictions.prediction).count() / float(predictions.count())
+    print("=========================================================================================================================")
+    print("REGRESION LOGISTICA")
     print('area bajo el ROC', evaluator.evaluate(predictions))
     print("presicion de la regresion logistica: ", accuracy)
+    print("=========================================================================================================================")
 
 
     #arboles de decision
@@ -41,13 +44,20 @@ if __name__ == "__main__":
     dtModel = dt.fit(train)
     predictionsDt = dtModel.transform(test)
     accuracy2 = predictionsDt.filter(predictionsDt.label == predictionsDt.prediction).count() / float(predictionsDt.count())
+    print("=========================================================================================================================")
+    print("ARBOLES DE DECISION")
     print("Test Area Under ROC: " + str(evaluator.evaluate(predictionsDt, {evaluator.metricName: "areaUnderROC"})))
     print("presicion de los arboles de decision: ", accuracy2)
+    print("=========================================================================================================================")
 
     #random forest 
     rf = RandomForestClassifier(featuresCol = 'atributos', labelCol = 'label')
     rfModel = rf.fit(train)
     predictionsRf = rfModel.transform(test)
     accuracy3 = predictionsRf.filter(predictionsRf.label == predictionsRf.prediction).count() / float(predictionsRf.count())
-    print("Test Area Under ROC: " + str(evaluator.evaluate(predictionsRf, {evaluator.metricName: "areaUnderROC"})))
+    print("=========================================================================================================================")
+    print("RANDOM FOREST") 
+    print("Test Area Under ROC: " + str(evaluator.evaluate(predictionsRf, {evaluator.metricName: "areaUnderROC"}))) 
     print("presicion random forest: ", accuracy3)
+    print("=========================================================================================================================")
+
