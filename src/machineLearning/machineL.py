@@ -31,17 +31,23 @@ if __name__ == "__main__":
     lr = LogisticRegression(featuresCol = 'atributos', labelCol = 'label', maxIter=10)
     lrModel = lr.fit(train)
     predictions = lrModel.transform(test)
-    print('Test Area Under ROC', evaluator.evaluate(predictions))
+    accuracy = predictions.filter(predictions.label == predictions.prediction).count() / float(predictions.count())
+    print('area bajo el ROC', evaluator.evaluate(predictions))
+    print("presicion de la regresion logistica: ", accuracy)
 
 
     #arboles de decision
     dt = DecisionTreeClassifier(featuresCol = 'atributos', labelCol = 'label', maxDepth = 3)
     dtModel = dt.fit(train)
     predictionsDt = dtModel.transform(test)
+    accuracy2 = predictionsDt.filter(predictionsDt.label == predictionsDt.prediction).count() / float(predictionsDt.count())
     print("Test Area Under ROC: " + str(evaluator.evaluate(predictionsDt, {evaluator.metricName: "areaUnderROC"})))
+    print("presicion de los arboles de decision: ", accuracy2)
 
     #random forest 
     rf = RandomForestClassifier(featuresCol = 'atributos', labelCol = 'label')
     rfModel = rf.fit(train)
     predictionsRf = rfModel.transform(test)
+    accuracy3 = predictionsRf.filter(predictionsRf.label == predictionsRf.prediction).count() / float(predictionsRf.count())
     print("Test Area Under ROC: " + str(evaluator.evaluate(predictionsRf, {evaluator.metricName: "areaUnderROC"})))
+    print("presicion random forest: ", accuracy3)
