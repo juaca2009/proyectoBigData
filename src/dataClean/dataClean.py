@@ -31,7 +31,8 @@ if __name__ == "__main__":
     df = spark.read.csv(sys.argv[1], sep=',', header= True, inferSchema=True)
 
     #columnas a eliminar
-    columnasEliminar = ['_c0', 'ID', 'Case Number', 'Primary Type', 'Description', 'Ward', 'Year', 'Latitude', 'Longitude', 'Location', 'Updated On']
+    columnasEliminar = ['_c0', 'ID', 'Case Number', 'Primary Type', 'Description', 'Ward', 'Year', 
+                        'Latitude', 'Longitude', 'Location', 'Updated On']
     df = df.select([column for column in df.columns if column not in columnasEliminar])
 
     #elimanar filas con valores nulos 
