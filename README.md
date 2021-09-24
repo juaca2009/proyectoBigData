@@ -8,3 +8,13 @@ Los datos que se utilizan para este proyecto se encuentran en el siguiente enlac
 Especificamente se utilizan los datos comprendidos entre el año 2012 y el año 2017 (367 MB).   
 Al ser un archivo demasiado grande no se carga dentro del repositorio del proyecto. Para agregar los datos al proyecto, se deben descargar de la pagina y posteriormente, crear una carpeta con el nombre "data" dentro del directorio de proyecto. 
 Finalmente se debe copiar el dataset descargado dentro de esta carpeta. 
+
+## Configuracion entorno
+Para configuirar el entorno primero se debe crear una imgen docker con el dockerFile.
+```
+docker build -t "spark" .
+```
+Posteriormente se debe correr el archivo docker compose.
+```
+docker-compose up
+```
