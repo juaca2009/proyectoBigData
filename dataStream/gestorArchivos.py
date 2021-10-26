@@ -14,6 +14,12 @@ class gestorArchivos:
         dataTotal = pd.concat(listaDataframes, ignore_index=True)
         return dataTotal
 
+    def getRuta(self):
+        return self.__ruta
+
+    def setRuta(self, _ruta):
+        self.__ruta = _ruta
+
 
 
 if __name__ == '__main__':

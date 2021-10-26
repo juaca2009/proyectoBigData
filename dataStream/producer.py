@@ -15,6 +15,10 @@ class Producer:
     def cargarDatos(self):
         self.__datos = self.__gestor.cargarArchivos()
 
+    def cambiarDatos(self, _ruta):
+        self.__gestor.setRuta(_ruta)
+        self.cargarDatos()
+
     def enviarDatos(self):
         for index, valor in self.__datos.iterrows():
             dict_data = dict(valor)
@@ -27,6 +31,18 @@ class Producer:
     
     def getDatos(self):
         return self.__datos
+
+    def getTopic(self):
+        return self.__topic
+
+    def getFreq(self):
+        return self.__freq
+
+    def setFreq(self, _freq):
+        self.__freq = _freq
+
+    def setTopic(self, _topic):
+        self.__topic = _topic
 
 if __name__ == '__main__':
     a = Producer('crimenes', 5, '../data/dataClean/')
