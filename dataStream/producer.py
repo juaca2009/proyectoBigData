@@ -9,16 +9,16 @@ class Producer:
         self.__freq = _freq if isinstance(_freq, int) else int(_freq)
         self.__producer = KafkaProducer(bootstrap_servers='localhost:9093',
                                         value_serializer=lambda x: json.dumps(x).encode('utf-8'),
-                                        batch_size = 1638400, buffer_memory = 33554432, linger_ms= 20000)
+                                        batch_size = 1638400, buffer_memory = 33554432, linger_ms= 500000)
         self.__gestor = gestorArchivos(_ruta)
         self.__datos = None
 
-    def cargarDatos(self):
-        self.__datos = self.__gestor.cargarArchivos()
+    def cargarDatos(self, _mes):
+        self.__datos = self.__gestor.cargarArchivos(_mes)
 
-    def cambiarDatos(self, _ruta):
+    def cambiarDatos(self, _ruta, _mes):
         self.__gestor.setRuta(_ruta)
-        self.cargarDatos()
+        self.cargarDatos(_mes)
 
     def enviarDatos(self):
         for index, valor in self.__datos.iterrows():
@@ -47,5 +47,5 @@ class Producer:
 
 if __name__ == '__main__':
     a = Producer('crimenes', 5, '../data/dataClean/')
-    a.cargarDatos()
+    a.cargarDatos(1)
     a.enviarDatos()
