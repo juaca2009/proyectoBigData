@@ -47,6 +47,7 @@ services:
       - ./conf/master:/conf
       - ./data:/tmp/data
       - ./src:/usr/src
+      - ./librerias:/librerias
 
   worker1:
     image: spark
