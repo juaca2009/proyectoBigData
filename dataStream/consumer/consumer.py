@@ -12,7 +12,7 @@ class consumer:
 
     def recibirMensajes(self):
         self.setData([])
-        salida = self.getConsumer().poll(timeout_ms=60000)
+        salida = self.getConsumer().poll(timeout_ms=120000)
         if salida != {}:
             for tp, messages in salida.items():
                 for message in messages:
