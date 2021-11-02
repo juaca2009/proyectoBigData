@@ -28,6 +28,10 @@ class procesador:
                        .add("mesDel", IntegerType()) \
                        .add("minutoDel", IntegerType())
         self.__dataGeneral = self.__spark.createDataFrame(self.__spark.sparkContext.emptyRDD(), self.__schema)
+        self.__evaluador = BinaryClassificationEvaluator()
+        self.lr = LogisticRegression(featuresCol = 'atributos', labelCol = 'label', maxIter=10)
+        self.dt = DecisionTreeClassifier(featuresCol = 'atributos', labelCol = 'label', maxDepth = 3)
+        self.rf = RandomForestClassifier(featuresCol = 'atributos', labelCol = 'label')
 
     def convertirDataFrames(self, _data):
         return self.__spark.sparkContext.parallelize(_data).toDF() 
@@ -38,6 +42,32 @@ class procesador:
     def agregarNuevaData(self, _newDataFrame):
         self.__dataGeneral = self.__dataGeneral.union(_newDataFrame)
 
+    def prepararData(self):
+        vector = VectorAssembler(inputCols = ['Domestic', 'Beat', 'District', 'Community Area', 'X Coordinate', 'Y Coordinate', 
+                                          'IUCR_index', 'Location Description_index', 'FBI Code_index', 'Block_index', 
+                                          'mesDel', 'diaDel', 'horaDel', 'minutoDel'], outputCol = 'atributos')
+        dfVectorizado = vector.transform(self.__dataGeneral)
+        dfVectorizado = dfVectorizado.select('atributos', 'Arrest')
+        dfVectorizado = dfVectorizado.selectExpr("atributos as atributos", "Arrest as label")
+        return dfVectorizado
+
+    def probarRegresionLogistica(self, _train, _test):
+        lrModel = self.lr.fit(_train)
+        predictions = lrModel.transform(_test)
+        accuracy = predictions.filter(predictions.label == predictions.prediction).count() / float(predictions.count())
+        return [self.__evaluador.evaluate(predictions), accuracy]
+
+    def proabarArbolesDecision(self, _train, _test):
+        dtModel = self.dt.fit(_train)
+        predictionsDt = dtModel.transform(_test)
+        accuracy2 = predictionsDt.filter(predictionsDt.label == predictionsDt.prediction).count() / float(predictionsDt.count())
+        return [self.__evaluador.evaluate(predictionsDt), accuracy2]
+
+    def probarRandomForest(self, _train, _test):
+        rfModel = self.rf.fit(_train)
+        predictionsRf = rfModel.transform(_test)
+        accuracy3 = predictionsRf.filter(predictionsRf.label == predictionsRf.prediction).count() / float(predictionsRf.count())
+        return [self.__evaluador.evaluate(predictionsRf), accuracy3]
 
     def getConsumer(self):
         return self.__consumer
@@ -54,12 +84,30 @@ if __name__ == '__main__':
     while salida:
         print("Esperando Datos")
         if a.recibirMensajes() == 1:
-            print("Mensajes Recibido")
+            print("Mensajes Recibidos")
             dataTemp = a.getDataTemporal()
             dfTemporal = a.convertirDataFrames(dataTemp)
             a.agregarNuevaData(dfTemporal)
-            b = a.getDataGeneral()
-            print(b.show())
+            dfV = a.prepararData()
+            train, test = dfV.randomSplit([0.7, 0.3], seed = 2018)
+            print("##########################################################################################")
+            print("cantidad de datos para modelos: ", a.getDataGeneral().count())
+            print("===========================================================================================")
+            print("Regresion Logistica")
+            regresion = a.probarRegresionLogistica(train, test)
+            print("Area bajo el ROC: ", regresion[0])
+            print("Precision: ", regresion[1])
+            print("===========================================================================================")
+            print("arboles de decision:")
+            decision = a.proabarArbolesDecision(train, test)
+            print("Area bajo el ROC: ", decision[0])
+            print("Precision: ", decision[1])
+            print("===========================================================================================")
+            print("Random Forest")
+            random = a.probarRandomForest(train, test)
+            print("Area bajo el ROC: ", random[0])
+            print("Precision: ", random[1])
+            print("##########################################################################################")
         else:
             print("No se ha recivo ningun mensaje")
 
