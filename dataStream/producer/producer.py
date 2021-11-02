@@ -9,7 +9,7 @@ class Producer:
         self.__freq = _freq if isinstance(_freq, int) else int(_freq)
         self.__producer = KafkaProducer(bootstrap_servers='localhost:9093',
                                         value_serializer=lambda x: json.dumps(x).encode('utf-8'),
-                                        batch_size = 1638400, buffer_memory = 33554432, linger_ms= 20000)
+                                        batch_size = 1638400, buffer_memory = 33554432, linger_ms= 60000)
         self.__gestor = gestorArchivos(_ruta)
         self.__datos = None
 
@@ -46,6 +46,6 @@ class Producer:
         self.__topic = _topic
 
 if __name__ == '__main__':
-    a = Producer('crimenes', 5, '../../data/dataClean/')
+    a = Producer('crimenes', 1, '../../data/dataClean/')
     a.cargarDatos(1)
     a.enviarDatos()
