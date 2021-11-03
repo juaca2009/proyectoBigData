@@ -51,6 +51,15 @@ class procesador:
         dfVectorizado = dfVectorizado.selectExpr("atributos as atributos", "Arrest as label")
         return dfVectorizado
 
+    def prepararBatch(self, _data):
+        vector = VectorAssembler(inputCols = ['Domestic', 'Beat', 'District', 'Community Area', 'X Coordinate', 'Y Coordinate', 
+                                          'IUCR_index', 'Location Description_index', 'FBI Code_index', 'Block_index', 
+                                          'mesDel', 'diaDel', 'horaDel', 'minutoDel'], outputCol = 'atributos')
+        dfVectorizado = vector.transform(_data)
+        dfVectorizado = dfVectorizado.select('atributos', 'Arrest')
+        dfVectorizado = dfVectorizado.selectExpr("atributos as atributos", "Arrest as label")
+        return dfVectorizado
+
     def probarRegresionLogistica(self, _train, _test):
         lrModel = self.lr.fit(_train)
         predictions = lrModel.transform(_test)
@@ -81,6 +90,7 @@ class procesador:
 if __name__ == '__main__':
     a = procesador('crimenes')
     salida = True
+    contador = 1
     while salida:
         print("Esperando Datos")
         if a.recibirMensajes() == 1:
@@ -92,6 +102,7 @@ if __name__ == '__main__':
             train, test = dfV.randomSplit([0.7, 0.3], seed = 2018)
             print("##########################################################################################")
             print("cantidad de datos para modelos: ", a.getDataGeneral().count())
+            print("BATCH numero: ", contador)
             print("===========================================================================================")
             print("Regresion Logistica")
             regresion = a.probarRegresionLogistica(train, test)
@@ -108,6 +119,7 @@ if __name__ == '__main__':
             print("Area bajo el ROC: ", random[0])
             print("Precision: ", random[1])
             print("##########################################################################################")
+            contador = contador + 1
         else:
             print("No se ha recivo ningun mensaje")
 
