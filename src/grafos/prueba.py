@@ -25,5 +25,3 @@ g.edges.filter("relationship = 'follow'").count()
 results = g.pageRank(resetProbability=0.01, maxIter=20)
 results.vertices.select("id", "pagerank").show()
 
-#comando para ejecutar desde servidor (ejecutar desde la carpeta /usr)
-#spark-2.4.1/bin/spark-submit --master spark://master:7077 --packages graphframes:graphframes:0.8.1-spark2.4-s_2.11 --repositories https://repos.spark-packages.org /usr/src/grafos/prueba.py
