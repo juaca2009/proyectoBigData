@@ -12,7 +12,7 @@ import matplotlib
 def imprimirGrafo(_listaC, _listaN):
     Gplot=nx.Graph()
     nod = _listaN.toPandas()
-    for row in _listaC.select('src','dst').where((_listaC.src ==32) | (_listaC.src ==1) | (_listaC.src ==55) | (_listaC.src ==28) ).collect():
+    for row in _listaC.select('src','dst').where((_listaC.src == 1) | (_listaC.src == 2) | (_listaC.src == 3) | (_listaC.src == 4) | (_listaC.src == 77)).collect():
         Gplot.add_edge(row['src'],row['dst'])
     plt.subplot(121)
     nod = nod.set_index('id')
@@ -20,9 +20,9 @@ def imprimirGrafo(_listaC, _listaN):
     nod['tipoNodo'] = pd.Categorical(nod['tipoNodo']) 
     nod['tipoNodo'].cat.codes
     cmap = matplotlib.colors.ListedColormap(['C0', 'darkorange', 'green']) #naranja colegios, verdes estaciones
-    node_sizes = [5 if entry == 'Estacion Policia' or entry == 'Colegio' else 100 for entry in nod.tipoNodo]
-    nx.draw(Gplot, with_labels=False, font_size=5, arrows=True, node_color=nod['tipoNodo'].cat.codes, cmap=cmap, node_size=node_sizes)
-    plt.savefig('/tmp/data/plot.png', dpi=600)
+    node_sizes = [50 if entry == 'Estacion Policia' or entry == 'Colegio' else 100 for entry in nod.tipoNodo]
+    nx.draw(Gplot, with_labels=True, font_size=1, arrows=True, node_color=nod['tipoNodo'].cat.codes, cmap=cmap, node_size=node_sizes, width=1)
+    plt.savefig('/tmp/data/cerca.png', dpi=600)
     plt.show()
 
 
@@ -34,6 +34,7 @@ spark.sparkContext.setLogLevel('WARN')
 estacionesDf = spark.read.csv("/tmp/data/police-stations.csv", sep=',', header= True, inferSchema=True)
 colegiosDf = spark.read.csv("/tmp/data/chicago-public-schools-elementary-school.csv", sep=',', header=True, inferSchema=True)
 crimenesDf = spark.read.csv("/tmp/data/dataClean/*.csv", sep=',', header= True, inferSchema=True)
+colindasDf = spark.read.csv("/tmp/data/dataset_colindantes.csv", sep=';', header=True, inferSchema=True)
 
 #Creacion dataFrames nodos y conexiones 
 schemaNodos = StructType() \
@@ -70,6 +71,10 @@ nodos = nodos.union(colegios)
 ac = colegiosDf.select("Community Areas", "School ID")
 ac = ac.withColumn("relacion", lit("Posee Colegio"))
 conexiones = conexiones.union(ac)
+
+#agregar conexiones areas colindantes
+aa = colindasDf.withColumn("relacion", lit("Colinda"))
+conexiones = conexiones.union(aa)
 
 #agregar conexiones areaC-estaciones
 ae = estacionesDf.select("Community Areas", "id")
