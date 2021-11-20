@@ -40,6 +40,21 @@ def obtencionEstaciones(g, aComunitarias, crimenesDf):
     crimenesDf = crimenesDf.drop("Area")
     return crimenesDf
 
+
+def obtencionColegios(g, crimenesDf):
+    pru = g.find("(AreaComunitaria)-[]->(Colegio)")
+    pru = pru.select(pru.AreaComunitaria.id.alias("areaC"), pru.Colegio.id.alias("Colegio")).where((pru.AreaComunitaria.tipoNodo == "AreaComunitaria") & (pru.Colegio.tipoNodo == "Colegio"))
+    tempColegios = pru.groupBy("areaC").count()
+    tempColegios = tempColegios.select(tempColegios["areaC"], tempColegios["count"].alias("cant Colegios"))
+    crimenesDf = crimenesDf.join(tempColegios, crimenesDf["Community Area"] == tempColegios["areaC"], "inner")
+    crimenesDf = crimenesDf.drop("areaC")
+    return crimenesDf
+
+
+
+
+
+
 spark=SparkSession.builder.appName('pruebasGrafos').getOrCreate()
 spark.sparkContext.setLogLevel('WARN')
 
@@ -100,8 +115,10 @@ g = GraphFrame(nodos, conexiones)
 
 
 #Obtencion primer feature, estaciones por areas comunitarias
-#crimenesDf = obtencionEstaciones(g, aComunitarias, crimenesDf)
+crimenesDf = obtencionEstaciones(g, aComunitarias, crimenesDf)
 
+#Obtencion segundo feature, colegios por areas comunitarias
+crimenesDf = obtencionColegios(g, crimenesDf)
 
 
 
