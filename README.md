@@ -9,12 +9,21 @@ Especificamente se utilizan los datos comprendidos entre el año 2012 y el año 
 Al ser un archivo demasiado grande no se carga dentro del repositorio del proyecto. Para agregar los datos al proyecto, se deben descargar de la pagina y posteriormente, crear una carpeta con el nombre "data" dentro del directorio de proyecto. 
 Finalmente se debe copiar el dataset descargado dentro de esta carpeta. 
 
+Para la realizacion del grafo es necesario agregar dos datasets nuevos: https://www.kaggle.com/chicago/chicago-police-stations/version/4, https://www.kaggle.com/chicago/chicago-public-schools-data?select=chicago-public-schools-high-school-progress-report-card-2012-2013.csv.
+Estos archivos se deben descargar y descomprimir dentro de la carpeta data, nombrada anteriormente.
+
 ## Configuracion entorno
 Para configuirar el entorno primero se debe crear una imgen docker con el dockerFile.
 ```
-docker build -t "spark" .
+sudo docker build -t "spark" .
 ```
 Posteriormente se debe correr el archivo docker compose.
 ```
-docker-compose up
+sudo docker-compose up
+```
+
+## Configuiracion para Correr script del grafo
+Para poder crear y manipular el grafo es necesario instalar las librerias de graphFrames por medio de la bandera package:
+```
+spark-2.4.1/bin/spark-submit --master spark://master:7077 --packages graphframes:graphframes:0.8.1-spark2.4-s_2.11 --repositories https://repos.spark-packages.org /usr/src/grafos/analisisGrafo.py
 ```
