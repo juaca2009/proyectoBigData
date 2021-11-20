@@ -52,14 +52,14 @@ conexiones = spark.createDataFrame(spark.sparkContext.emptyRDD(), schemaConexion
 #agregar nodos tipo area comunitaria
 aComunitarias = crimenesDf.select('Community Area').distinct()
 aComunitarias = aComunitarias.withColumn("Community Area", aComunitarias["Community Area"].cast(IntegerType()))
-aComunitarias = aComunitarias.withColumn("tipoNodo", lit("Area Comunitaria"))
+aComunitarias = aComunitarias.withColumn("tipoNodo", lit("AreaComunitaria"))
 nodos = nodos.union(aComunitarias)
 
 #agregar nodos estaciones de policia 
 estacionesDf = estacionesDf.dropDuplicates(["ZIP"])
 estacionesDf = estacionesDf.withColumn("id", estacionesDf["ZIP"]) #generar columna id para cada estacion 
 estaciones = estacionesDf.select("id").distinct()
-estaciones = estaciones.withColumn("tipoNodo", lit("Estacion Policia"))
+estaciones = estaciones.withColumn("tipoNodo", lit("EstacionPolicia"))
 nodos = nodos.union(estaciones)
 
 #agregar nodos tipo colegios
@@ -69,7 +69,7 @@ nodos = nodos.union(colegios)
 
 #agregar conexiones areaC-colegio
 ac = colegiosDf.select("Community Areas", "School ID")
-ac = ac.withColumn("relacion", lit("Posee Colegio"))
+ac = ac.withColumn("relacion", lit("PoseeColegio"))
 conexiones = conexiones.union(ac)
 
 #agregar conexiones areas colindantes
@@ -78,12 +78,28 @@ conexiones = conexiones.union(aa)
 
 #agregar conexiones areaC-estaciones
 ae = estacionesDf.select("Community Areas", "id")
-ae = ae.withColumn("relacion", lit("Posee Estacion"))
+ae = ae.withColumn("relacion", lit("PoseeEstacion"))
 conexiones = conexiones.union(ae)
 conexiones = conexiones.dropna(how='any')
 
 g = GraphFrame(nodos, conexiones)
-imprimirGrafo(conexiones, nodos)
+#imprimirGrafo(conexiones, nodos)
+
+
+#Obtencion primer feature, estaciones por areas comunitarias
+pru = g.find("(AreaComunitaria)-[]->(EstacionPolicia)")
+pru = pru.select(pru.AreaComunitaria.id.alias("areaC"), pru.EstacionPolicia.id.alias("Estacion")).where((pru.AreaComunitaria.tipoNodo == "AreaComunitaria") & (pru.EstacionPolicia.tipoNodo == "EstacionPolicia"))
+tempEstaciones = aComunitarias.join(pru, aComunitarias["Community Area"] == pru["areaC"], "leftouter")
+tempEstaciones = tempEstaciones.select(tempEstaciones["Community Area"].alias("Area"), "Estacion")
+exprT = expr(
+        """
+        IF(Estacion IS NULL, 0, 1) 
+        """
+        )
+tempEstaciones = tempEstaciones.withColumn("Estacion", exprT)
+crimenesDf = crimenesDf.join(tempEstaciones, crimenesDf["Community Area"] == tempEstaciones["Area"], "inner")
+crimenesDf.select("Community Area", "Area", "Estacion").where(crimenesDf["Community Area"] == 9).show(truncate=False)
+crimenesDf = crimenesDf.drop("Area")
 
 #g.inDegrees.show()
 
