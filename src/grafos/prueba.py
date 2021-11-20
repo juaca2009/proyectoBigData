@@ -25,7 +25,20 @@ def imprimirGrafo(_listaC, _listaN):
     plt.savefig('/tmp/data/cerca.png', dpi=600)
     plt.show()
 
-
+def obtencionEstaciones(g, aComunitarias, crimenesDf):
+    pru = g.find("(AreaComunitaria)-[]->(EstacionPolicia)")
+    pru = pru.select(pru.AreaComunitaria.id.alias("areaC"), pru.EstacionPolicia.id.alias("Estacion")).where((pru.AreaComunitaria.tipoNodo == "AreaComunitaria") & (pru.EstacionPolicia.tipoNodo == "EstacionPolicia"))
+    tempEstaciones = aComunitarias.join(pru, aComunitarias["Community Area"] == pru["areaC"], "leftouter")
+    tempEstaciones = tempEstaciones.select(tempEstaciones["Community Area"].alias("Area"), "Estacion")
+    exprT = expr(
+            """
+            IF(Estacion IS NULL, 0, 1) 
+            """
+            )
+    tempEstaciones = tempEstaciones.withColumn("Estacion", exprT)
+    crimenesDf = crimenesDf.join(tempEstaciones, crimenesDf["Community Area"] == tempEstaciones["Area"], "inner")
+    crimenesDf = crimenesDf.drop("Area")
+    return crimenesDf
 
 spark=SparkSession.builder.appName('pruebasGrafos').getOrCreate()
 spark.sparkContext.setLogLevel('WARN')
@@ -87,24 +100,8 @@ g = GraphFrame(nodos, conexiones)
 
 
 #Obtencion primer feature, estaciones por areas comunitarias
-pru = g.find("(AreaComunitaria)-[]->(EstacionPolicia)")
-pru = pru.select(pru.AreaComunitaria.id.alias("areaC"), pru.EstacionPolicia.id.alias("Estacion")).where((pru.AreaComunitaria.tipoNodo == "AreaComunitaria") & (pru.EstacionPolicia.tipoNodo == "EstacionPolicia"))
-tempEstaciones = aComunitarias.join(pru, aComunitarias["Community Area"] == pru["areaC"], "leftouter")
-tempEstaciones = tempEstaciones.select(tempEstaciones["Community Area"].alias("Area"), "Estacion")
-exprT = expr(
-        """
-        IF(Estacion IS NULL, 0, 1) 
-        """
-        )
-tempEstaciones = tempEstaciones.withColumn("Estacion", exprT)
-crimenesDf = crimenesDf.join(tempEstaciones, crimenesDf["Community Area"] == tempEstaciones["Area"], "inner")
-crimenesDf.select("Community Area", "Area", "Estacion").where(crimenesDf["Community Area"] == 9).show(truncate=False)
-crimenesDf = crimenesDf.drop("Area")
+#crimenesDf = obtencionEstaciones(g, aComunitarias, crimenesDf)
 
-#g.inDegrees.show()
 
-#g.edges.filter("relationship = 'follow'").count()
 
-#results = g.pageRank(resetProbability=0.01, maxIter=20)
-#results.vertices.select("id", "pagerank").show()
 
