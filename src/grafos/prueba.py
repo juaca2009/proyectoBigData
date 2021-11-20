@@ -120,5 +120,6 @@ crimenesDf = obtencionEstaciones(g, aComunitarias, crimenesDf)
 #Obtencion segundo feature, colegios por areas comunitarias
 crimenesDf = obtencionColegios(g, crimenesDf)
 
-
+#importar datos a csv
+#crimenesDf.write.csv("/tmp/data/dataCleanNew/", header=True)
 
